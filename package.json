@@ -1,0 +1,12 @@
+{
+  "name": "mooe-fmis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MOOE Fund Ledger / FMIS — shared server (no external dependencies)",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
