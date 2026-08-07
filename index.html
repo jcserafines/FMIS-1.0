@@ -28,7 +28,7 @@
     font-family:'IBM Plex Sans', sans-serif;
     font-size:14px;
   }
-  .wrap{max-width:1120px;margin:0 auto;padding:28px 24px 60px;}
+  .wrap{max-width:1800px;margin:0 auto;padding:28px 40px 60px;}
 
   /* ===== Header / masthead ===== */
   .masthead{
@@ -438,6 +438,55 @@
     justify-content:center;
     padding:24px;
   }
+  .orientation-overlay{
+    position:fixed; inset:0;
+    background:var(--navy-deep);
+    z-index:2000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+    text-align:center;
+  }
+  .orientation-overlay .rotate-icon{
+    font-size:44px;
+    margin-bottom:14px;
+    display:inline-block;
+    animation:rotateHint 1.8s ease-in-out infinite;
+  }
+  @keyframes rotateHint{
+    0%, 100%{transform:rotate(0deg);}
+    50%{transform:rotate(90deg);}
+  }
+  .orientation-overlay h2{
+    font-family:'Source Serif 4', serif;
+    color:#fff;
+    font-size:20px;
+    margin:0 0 8px;
+  }
+  .orientation-overlay p{
+    font-family:'IBM Plex Sans', sans-serif;
+    color:rgba(255,255,255,0.78);
+    font-size:13.5px;
+    line-height:1.6;
+    max-width:340px;
+    margin:0 0 20px;
+  }
+  .orientation-overlay button{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:12.5px;
+    font-weight:500;
+    color:#fff;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:6px;
+    padding:9px 18px;
+    cursor:pointer;
+  }
+  .orientation-overlay button:hover{background:rgba(255,255,255,0.1);}
+  @media (orientation:portrait) and (max-width:900px){
+    .orientation-overlay.active{display:flex;}
+  }
   .login-card{
     background:var(--card);
     border:1px solid var(--paper-line);
@@ -494,6 +543,15 @@
 </style>
 </head>
 <body>
+
+<div class="orientation-overlay" id="orientationOverlay">
+  <div>
+    <div class="rotate-icon">📱</div>
+    <h2>Rotate your device</h2>
+    <p>This system works best in landscape (sideways). Turn your phone or tablet for a full view of the budget tables and forms.</p>
+    <button type="button" id="orientationDismissBtn">Continue in portrait</button>
+  </div>
+</div>
 
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
@@ -2558,6 +2616,34 @@
 
   initAuth();
   checkSessionAndLoad();
+
+  // Suggests rotating to landscape on narrow phone/tablet screens —
+  // browsers don't let a regular website force a device to rotate, so
+  // this is a dismissible nudge, not a hard requirement. The CSS media
+  // query (orientation:portrait) and (max-width:900px) is what
+  // actually decides when it CAN show; this just adds/removes the
+  // "active" class and honors a per-session dismissal.
+  var orientationDismissed = false;
+  function updateOrientationPrompt(){
+    var el = document.getElementById('orientationOverlay');
+    if(!el) return;
+    el.classList.toggle('active', !orientationDismissed);
+  }
+  document.getElementById('orientationDismissBtn').addEventListener('click', function(){
+    orientationDismissed = true;
+    updateOrientationPrompt();
+  });
+  window.addEventListener('resize', function(){
+    // Rotating back to portrait after dismissing shows the prompt
+    // again only once they've returned to landscape and back.
+    if(window.innerWidth >= window.innerHeight) orientationDismissed = false;
+    updateOrientationPrompt();
+  });
+  window.addEventListener('orientationchange', function(){
+    orientationDismissed = false;
+    updateOrientationPrompt();
+  });
+  updateOrientationPrompt();
 
   // Keeps this account's own data (and, for an Admin on the Users tab,
   // the live sign-in monitor and account activity) up to date across
