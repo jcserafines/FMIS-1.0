@@ -1636,7 +1636,7 @@
     } else {
       recordRows = sortedLedger.map(function(e){
         return '<tr>'
-          + '<td>'+(e.date||'—')+'</td>'
+          + '<td>'+(fmtDate(e.date)||'—')+'</td>'
           + '<td>'+escapeHtml(e.particulars||'')+'</td>'
           + '<td>'+escapeHtml(e.category||'')+'</td>'
           + '<td>'+escapeHtml(e.payee||'')+'</td>'
@@ -1804,7 +1804,7 @@
     var term = (state.ledgerSearch||'').trim().toLowerCase();
     var sorted = state.ledger.slice().sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
     var filtered = term ? sorted.filter(function(e){
-      return [e.date, e.obr, e.check, e.pr, e.po, e.particulars, e.category, e.payee]
+      return [e.date, fmtDate(e.date), e.obr, e.check, e.pr, e.po, e.particulars, e.category, e.payee]
         .some(function(f){ return (f||'').toLowerCase().indexOf(term) !== -1; });
     }) : sorted;
 
@@ -1817,7 +1817,7 @@
       rowsHtml = filtered.map(function(e){
         var isEditing = state.ledgerEditId === e.id;
         return '<tr'+(isEditing ? ' style="background:#FBF3DE;"' : '')+'>'
-          + '<td>'+ (e.date||'—') +'</td>'
+          + '<td>'+ (fmtDate(e.date)||'—') +'</td>'
           + '<td style="font-family:\'IBM Plex Mono\',monospace;">'+ (e.obr||'—') +'</td>'
           + '<td style="font-family:\'IBM Plex Mono\',monospace;">'+ escapeHtml(e.check||'—') +'</td>'
           + '<td style="font-family:\'IBM Plex Mono\',monospace;">'+ escapeHtml(e.pr||'—') +'</td>'
@@ -1844,7 +1844,7 @@
       +   '<h2 class="section-title" style="margin-bottom:0;">Transaction Record</h2>'
       +   '<div style="display:flex; align-items:center; gap:10px;">'
       +     '<div style="position:relative; width:260px;">'
-      +       '<input type="text" id="ledgerSearch" placeholder="Search date, voucher, check, PR, PO, particulars…" value="'+escapeHtml(state.ledgerSearch||'')+'" style="padding-left:30px;">'
+      +       '<input type="text" id="ledgerSearch" placeholder="Search date (mm/dd/yyyy), voucher, check, PR, PO, particulars…" value="'+escapeHtml(state.ledgerSearch||'')+'" style="padding-left:30px;">'
       +       '<span style="position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--ink-soft); font-size:13px;">🔍</span>'
       +     '</div>'
       +     (state.ledger.length ? '<button class="btn danger small" id="removeAllLedgerBtn">Remove All</button>' : '')
@@ -2088,6 +2088,11 @@
       + '<div class="footnote">NEP (After Tax) is computed automatically as Fiscal Year (NEP) minus Tax. Current Fiscal Year, GAD, DRRM, PRAISE, and SC/PWD are entered manually. If local storage ever fills up or this browser\'s data gets cleared, use "Save to Google Drive" to download a backup .csv of every Yearly Fund record — you can then drag that file into <a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">Google Drive</a> to keep an off-device copy. Both Admin and User accounts can do this.</div>';
   }
 
+  // Stored dates stay ISO (yyyy-mm-dd) for sorting; shown as mm/dd/yyyy.
+  function fmtDate(d){
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d||'');
+    return m ? m[2]+'/'+m[3]+'/'+m[1] : (d||'');
+  }
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -2536,7 +2541,7 @@
 
     var sortedLedger = state.ledger.slice().sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
     var ledgerRows = sortedLedger.length ? sortedLedger.map(function(e){
-      return '<tr><td>'+(e.date||'—')+'</td><td>'+escapeHtml(e.obr||'—')+'</td><td>'+escapeHtml(e.check||'—')+'</td><td>'+escapeHtml(e.pr||'—')+'</td><td>'+escapeHtml(e.po||'—')+'</td><td>'+escapeHtml(e.particulars||'')+'</td><td>'+escapeHtml(e.category||'')+'</td><td>'+escapeHtml(e.payee||'')+'</td><td class="num">'+peso(e.amount)+'</td><td class="num">'+peso(e.tax)+'</td><td class="num">'+peso(netIncomeOf(e))+'</td></tr>';
+      return '<tr><td>'+(fmtDate(e.date)||'—')+'</td><td>'+escapeHtml(e.obr||'—')+'</td><td>'+escapeHtml(e.check||'—')+'</td><td>'+escapeHtml(e.pr||'—')+'</td><td>'+escapeHtml(e.po||'—')+'</td><td>'+escapeHtml(e.particulars||'')+'</td><td>'+escapeHtml(e.category||'')+'</td><td>'+escapeHtml(e.payee||'')+'</td><td class="num">'+peso(e.amount)+'</td><td class="num">'+peso(e.tax)+'</td><td class="num">'+peso(netIncomeOf(e))+'</td></tr>';
     }).join('') : '<tr><td colspan="11" style="text-align:center;color:#888;">No disbursements recorded.</td></tr>';
     var ledgerTotalRow = sortedLedger.length ? '<tr class="print-total-row"><td colspan="8">TOTAL</td><td class="num">'+peso(grossAll)+'</td><td class="num">'+peso(taxAll)+'</td><td class="num">'+peso(netAll)+'</td></tr>' : '';
 
